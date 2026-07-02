@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internal Medicine Pharmacotherapy and Disease Management: Flashcard Deck</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Calibri,Arial,sans-serif;background:#F6F3EC;color:#1F4D3D;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px}
+    h1{font-size:1.5rem;margin-bottom:4px;text-align:center}
+    .sub{color:#555;font-size:.95rem;margin-bottom:20px;text-align:center}
+    #deck{width:100%;max-width:680px}
+    .progress{font-size:.9rem;color:#555;margin-bottom:10px;text-align:center}
+    .scene{width:100%;perspective:1000px;margin-bottom:8px}
+    .card{width:100%;min-height:220px;cursor:pointer;transform-style:preserve-3d;transition:transform 0.6s;position:relative}
+    .card.flipped{transform:rotateY(180deg)}
+    .face{position:absolute;width:100%;height:100%;min-height:220px;backface-visibility:hidden;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:40px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-sizing:border-box}
+    .front{background:#fff}
+    .back{background:#FBF3E4;transform:rotateY(180deg)}
+    .card-label{font-size:.75rem;font-weight:bold;color:#C17817;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+    .card-text{font-size:1.15rem;line-height:1.6}
+    .hint{font-size:.8rem;color:#888;margin-top:14px;text-align:center}
+    .controls{display:flex;gap:12px;margin-top:18px;justify-content:center;flex-wrap:wrap}
+    .controls button{padding:10px 24px;border:none;border-radius:8px;font-size:.95rem;cursor:pointer;font-weight:bold}
+    #btnFlip{background:#C17817;color:#fff}
+    #btnPrev{background:#eee;color:#333}
+    #btnNext{background:#1F4D3D;color:#fff}
+    #btnShuffle{background:#f0f0f0;color:#555;font-size:.85rem;padding:8px 16px}
+    .chapter-badge{background:#1F4D3D;color:#fff;font-size:.7rem;padding:3px 10px;border-radius:20px;margin-bottom:14px}
+    #loading{color:#888;font-size:1rem;margin-top:40px}
+  </style>
+</head>
+<body>
+  <h1>Internal Medicine Pharmacotherapy and Disease Management</h1>
+  <p class="sub">Guideline-Concordant Pharmacotherapy Flashcard Deck &mdash; 500 Cards &mdash; Uprising Test Prep</p>
+
+  <p id="loading">Loading flashcards...</p>
+
+  <div id="deck" style="display:none">
+    <p class="progress" id="prog"></p>
+    <div class="scene">
+      <div class="card" id="card" onclick="flip()">
+        <div class="face front">
+          <span class="chapter-badge" id="chBadge"></span>
+          <div class="card-label">Question</div>
+          <div class="card-text" id="frontText"></div>
+        </div>
+        <div class="face back">
+          <span class="chapter-badge" id="chBadgeB"></span>
+          <div class="card-label">Answer</div>
+          <div class="card-text" id="backText"></div>
+        </div>
+      </div>
+    </div>
+    <p class="hint" id="hint">Tap card to reveal answer</p>
+    <div class="controls">
+      <button id="btnPrev" onclick="go(-1)">&#8592; Prev</button>
+      <button id="btnFlip" onclick="flip()">Flip</button>
+      <button id="btnNext" onclick="go(1)">Next &#8594;</button>
+    </div>
+    <div class="controls">
+      <button id="btnShuffle" onclick="shuffle()">&#x2684; Shuffle</button>
+    </div>
+  </div>
+
+<script>
+let cards = [], idx = 0;
+
+async function init() {
+  const res = await fetch("flashcards.json");
+  cards = await res.json();
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("deck").style.display    = "block";
+  render();
+}
+
+function sizeCard() {
+  const front = document.querySelector("#card .face.front");
+  const back  = document.querySelector("#card .face.back");
+  const h = Math.max(front.scrollHeight, back.scrollHeight, 220);
+  document.getElementById("card").style.height = h + "px";
+}
+
+function render() {
+  const c = cards[idx];
+  document.getElementById("frontText").textContent = c.front;
+  document.getElementById("backText").textContent  = c.back;
+  const badge = "Chapter " + c.chapter;
+  document.getElementById("chBadge").textContent  = badge;
+  document.getElementById("chBadgeB").textContent = badge;
+  document.getElementById("prog").textContent      = (idx+1) + " / " + cards.length;
+  document.getElementById("card").classList.remove("flipped");
+  document.getElementById("hint").textContent = "Tap card to reveal answer";
+  sizeCard();
+}
+
+function flip() {
+  const card = document.getElementById("card");
+  card.classList.toggle("flipped");
+  document.getElementById("hint").textContent = card.classList.contains("flipped") ? "Tap to see question" : "Tap card to reveal answer";
+}
+
+function go(dir) {
+  idx = (idx + dir + cards.length) % cards.length;
+  render();
+}
+
+function shuffle() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  idx = 0;
+  render();
+}
+
+window.addEventListener("resize", sizeCard);
+init();
+</script>
+</body>
+</html>
